@@ -36,7 +36,7 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 
         // set DDL options...
         config.setDdlGenerate(true);
-        config.setDdlRun(false);
+        config.setDdlRun(true);
 
         config.setDefaultServer(true);
         config.setRegister(false);

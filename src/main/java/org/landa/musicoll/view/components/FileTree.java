@@ -65,19 +65,15 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 	}
 
 	@Override
-	public void treeWillCollapse(final TreeExpansionEvent event)
-			throws ExpandVetoException {
+	public void treeWillCollapse(final TreeExpansionEvent event) throws ExpandVetoException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void treeWillExpand(final TreeExpansionEvent event)
-			throws ExpandVetoException {
-		FileTreeNode treeNode = (FileTreeNode) event.getPath()
-				.getLastPathComponent();
+	public void treeWillExpand(final TreeExpansionEvent event) throws ExpandVetoException {
+		FileTreeNode treeNode = (FileTreeNode) event.getPath().getLastPathComponent();
 
-		System.out.println("FileTree.treeWillExpand()");
 		addNodes(treeNode);
 
 	}
@@ -85,7 +81,7 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 	private void addNodes(final FileTreeNode rootNode) {
 
 		File dir = rootNode.getFile();
-		
+
 		rootNode.removeAllChildren();
 
 		Vector ol = new Vector();
@@ -118,13 +114,12 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 		// Pass two: for files.
 		for (int fnum = 0; fnum < files.size(); fnum++) {
 			String file = (String) files.elementAt(fnum);
-			rootNode.add(new FileTreeNode(file, new File(file)));
+			rootNode.add(new FileTreeNode(file, new File(dir.getPath() + File.separator + file)));
 		}
 
 		if (null != tree) {
 			DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model
-					.getRoot();
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 			model.reload(root);
 		}
 

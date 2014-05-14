@@ -12,10 +12,12 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.ListCellRenderer;
 
 import org.landa.musicoll.controllers.player.SwingAudioPlayer;
 import org.landa.musicoll.model.Resource;
+import org.landa.musicoll.view.components.FileForm;
 import org.landa.musicoll.view.components.FileTree;
 import org.landa.musicoll.view.components.MenuPanel;
 
@@ -41,14 +43,19 @@ public class MainWindow extends JFrame {
 
 	private final SwingAudioPlayer audioPlayer;
 
+	private final FileForm fileForm;
+
 	@Inject
-	public MainWindow(@Named("basePath") final File basePath, final MenuPanel menuPanel, final SwingAudioPlayer audioPlayer) {
+	public MainWindow(@Named("basePath") final File basePath,
+			final MenuPanel menuPanel, final SwingAudioPlayer audioPlayer,
+			FileForm fileForm) {
 
-		System.out.println("MainWindow.MainWindow()");
-
+		this.fileForm = fileForm;
 		this.basePath = basePath;
 		this.menuPanel = menuPanel;
 		this.audioPlayer = audioPlayer;
+
+		System.out.println("MainWindow.MainWindow()");
 
 		setLayout(new BorderLayout());
 		setTitle("Musicoll");
@@ -70,8 +77,10 @@ public class MainWindow extends JFrame {
 		list.setCellRenderer(new ListCellRenderer<Resource>() {
 
 			@Override
-			public Component getListCellRendererComponent(final JList<? extends Resource> list, final Resource value, final int index, final boolean isSelected,
-			        final boolean cellHasFocus) {
+			public Component getListCellRendererComponent(
+					final JList<? extends Resource> list, final Resource value,
+					final int index, final boolean isSelected,
+					final boolean cellHasFocus) {
 				return new JLabel(value.getRelativePath());
 			}
 		});
@@ -81,10 +90,15 @@ public class MainWindow extends JFrame {
 		JPanel contentPanel = new JPanel();
 		contentPanel.setLayout(new BorderLayout());
 
-		contentPanel.add(audioPlayer, BorderLayout.NORTH);
-		contentPanel.add(jScrollPane, BorderLayout.CENTER);
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.addTab("List", jScrollPane);
+		tabbedPane.addTab("Form", fileForm);
 
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileTree, contentPanel);
+		contentPanel.add(audioPlayer, BorderLayout.NORTH);
+		contentPanel.add(tabbedPane, BorderLayout.CENTER);
+
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				fileTree, contentPanel);
 		// splitPane.setPreferredSize(new Dimension(arg0, arg1));
 
 		pane.add(splitPane, BorderLayout.CENTER);

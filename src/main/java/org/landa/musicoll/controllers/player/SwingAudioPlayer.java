@@ -29,16 +29,6 @@ public class SwingAudioPlayer extends JPanel {
 
 	private final JSlider sliderTime = new JSlider(0, 1000);
 
-	// // Icons used for buttons
-	// private final ImageIcon iconOpen = new
-	// ImageIcon(getClass().getResource("Open.png"));
-	// private final ImageIcon iconPlay = new
-	// ImageIcon(getClass().getResource("Play.gif"));
-	// private final ImageIcon iconStop = new
-	// ImageIcon(getClass().getResource("Stop.gif"));
-	// private final ImageIcon iconPause = new
-	// ImageIcon(getClass().getResource("Pause.png"));
-
 	public SwingAudioPlayer() {
 		super();
 		setLayout(new GridBagLayout());
@@ -77,7 +67,8 @@ public class SwingAudioPlayer extends JPanel {
 		constraints.gridx = 2;
 		add(labelDuration, constraints);
 
-		JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+		JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20,
+				5));
 		panelButtons.add(buttonPlay);
 		panelButtons.add(buttonPause);
 

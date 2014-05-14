@@ -24,9 +24,11 @@ import javax.swing.tree.ExpandVetoException;
 public class FileTree extends JPanel implements TreeWillExpandListener {
 
 	private final JTree tree;
+	private final File dir;
 
 	/** Construct a FileTree */
 	public FileTree(final File dir) {
+		this.dir = dir;
 		setLayout(new BorderLayout());
 
 		// Make a tree list with all the nodes, and make it a JTree
@@ -122,6 +124,15 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 			model.reload(root);
 		}
+
+	}
+
+	public void reload() {
+
+		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+		FileTreeNode root = (FileTreeNode) model.getRoot();
+
+		addNodes(root);
 
 	}
 

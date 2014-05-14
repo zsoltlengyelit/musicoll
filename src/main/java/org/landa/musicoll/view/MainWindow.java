@@ -20,6 +20,7 @@ import org.landa.musicoll.view.components.FileTree;
 import org.landa.musicoll.view.components.MenuPanel;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
@@ -27,77 +28,84 @@ import com.google.inject.name.Named;
  * @author lzsolt
  * 
  */
+@Singleton
 public class MainWindow extends JFrame {
 
-    FileTree fileTree;
+	FileTree fileTree;
 
-    JList<Resource> list;
+	JList<Resource> list;
 
-    MenuPanel menuPanel;
+	MenuPanel menuPanel;
 
-    File basePath;
+	File basePath;
 
-    private final SwingAudioPlayer audioPlayer;
+	private final SwingAudioPlayer audioPlayer;
 
-    @Inject
-    public MainWindow(@Named("basePath") final File basePath, final MenuPanel menuPanel, final SwingAudioPlayer audioPlayer) {
+	@Inject
+	public MainWindow(@Named("basePath") final File basePath, final MenuPanel menuPanel, final SwingAudioPlayer audioPlayer) {
 
-        this.basePath = basePath;
-        this.menuPanel = menuPanel;
-        this.audioPlayer = audioPlayer;
+		System.out.println("MainWindow.MainWindow()");
 
-        setLayout(new BorderLayout());
-        setTitle("Musicoll");
+		this.basePath = basePath;
+		this.menuPanel = menuPanel;
+		this.audioPlayer = audioPlayer;
 
-        buildPane(getContentPane());
+		setLayout(new BorderLayout());
+		setTitle("Musicoll");
 
-        pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		buildPane(getContentPane());
 
-    }
+		pack();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    private void buildPane(final Container pane) {
+	}
 
-        fileTree = new FileTree(basePath);
+	private void buildPane(final Container pane) {
 
-        pane.add(fileTree, BorderLayout.WEST);
+		fileTree = new FileTree(basePath);
 
-        list = new JList<Resource>(new DefaultListModel<Resource>());
-        list.setCellRenderer(new ListCellRenderer<Resource>() {
+		pane.add(fileTree, BorderLayout.WEST);
 
-            @Override
-            public Component getListCellRendererComponent(final JList<? extends Resource> list, final Resource value, final int index, final boolean isSelected,
-                    final boolean cellHasFocus) {
-                return new JLabel(value.getRelativePath());
-            }
-        });
+		list = new JList<Resource>(new DefaultListModel<Resource>());
+		list.setCellRenderer(new ListCellRenderer<Resource>() {
 
-        JScrollPane jScrollPane = new JScrollPane(list);
+			@Override
+			public Component getListCellRendererComponent(final JList<? extends Resource> list, final Resource value, final int index, final boolean isSelected,
+			        final boolean cellHasFocus) {
+				return new JLabel(value.getRelativePath());
+			}
+		});
 
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BorderLayout());
+		JScrollPane jScrollPane = new JScrollPane(list);
 
-        contentPanel.add(audioPlayer, BorderLayout.NORTH);
-        contentPanel.add(jScrollPane, BorderLayout.CENTER);
+		JPanel contentPanel = new JPanel();
+		contentPanel.setLayout(new BorderLayout());
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileTree, contentPanel);
-        // splitPane.setPreferredSize(new Dimension(arg0, arg1));
+		contentPanel.add(audioPlayer, BorderLayout.NORTH);
+		contentPanel.add(jScrollPane, BorderLayout.CENTER);
 
-        pane.add(splitPane, BorderLayout.CENTER);
-        pane.add(menuPanel, BorderLayout.NORTH);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileTree, contentPanel);
+		// splitPane.setPreferredSize(new Dimension(arg0, arg1));
 
-    }
+		pane.add(splitPane, BorderLayout.CENTER);
+		pane.add(menuPanel, BorderLayout.NORTH);
 
-    public FileTree getFileTree() {
-        return fileTree;
-    }
+	}
 
-    public JList<Resource> getList() {
-        return list;
-    }
+	public FileTree getFileTree() {
+		return fileTree;
+	}
 
-    public MenuPanel getMenuPanel() {
-        return menuPanel;
-    }
+	public JList<Resource> getList() {
+		return list;
+	}
+
+	public MenuPanel getMenuPanel() {
+		return menuPanel;
+	}
+
+	public SwingAudioPlayer getAudioPlayer() {
+		return audioPlayer;
+	}
 
 }

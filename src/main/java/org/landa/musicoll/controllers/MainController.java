@@ -1,22 +1,25 @@
 package org.landa.musicoll.controllers;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.WatchEvent;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JSlider;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
-import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.advanced.AdvancedPlayer;
-import javazoom.jl.player.advanced.PlaybackEvent;
-import javazoom.jl.player.advanced.PlaybackListener;
+import javazoom.jlgui.basicplayer.BasicController;
+import javazoom.jlgui.basicplayer.BasicPlayer;
+import javazoom.jlgui.basicplayer.BasicPlayerEvent;
+import javazoom.jlgui.basicplayer.BasicPlayerException;
+import javazoom.jlgui.basicplayer.BasicPlayerListener;
 
 import org.landa.musicoll.core.watch.FileSystemListener;
 import org.landa.musicoll.core.watch.FileSystemWatchService;
@@ -32,28 +35,31 @@ import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
 
-public class MainController implements TreeSelectionListener, FileSystemListener {
+public class MainController implements TreeSelectionListener, FileSystemListener, BasicPlayerListener, ActionListener {
 
 	private final EbeanServer ebeanServer;
 
-	private AdvancedPlayer player;
+	private BasicPlayer basicPlayer;
 
 	private final FileSystemWatchService watchService;
 
-	private MainWindow mainWindow;
+	private final MainWindow mainWindow;
 
 	@Inject
-	public MainController(final EbeanServer ebeanServer, FileSystemWatchService watchService) {
+	public MainController(final EbeanServer ebeanServer, FileSystemWatchService watchService, MainWindow mainWindow) {
 		this.ebeanServer = ebeanServer;
 		this.watchService = watchService;
+		this.mainWindow = mainWindow;
+
 	}
 
-	public void attach(final MainWindow mainWindow) {
+	public void start() {
 
-		this.mainWindow = mainWindow;
 		FileTree fileTree = mainWindow.getFileTree();
 		JTree tree = fileTree.getTree();
 		tree.addTreeSelectionListener(this);
+
+		mainWindow.getAudioPlayer().getButtonPause().addActionListener(this);
 
 		JList<Resource> list = mainWindow.getList();
 
@@ -67,6 +73,8 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 		watchService.setListener(this);
 		this.watchService.watch();
 
+		// finaly show window
+		mainWindow.setVisible(true);
 	}
 
 	@Override
@@ -86,26 +94,24 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				try {
 
 					System.out.println("MainController.openFile()");
 
-					if (null != player) {
-						player.close();
+					if (null != basicPlayer) {
+						basicPlayer.stop();
 					}
-					player = new AdvancedPlayer(new FileInputStream(selectedFile.getAbsoluteFile()));
 
-					player.setPlayBackListener(new PlaybackListener() {
-						@Override
-						public void playbackStarted(PlaybackEvent evt) {
-							System.out.println("MainController.openFile(...).new PlaybackListener() {...}.playbackStarted()");
-						}
-					});
+					basicPlayer = new BasicPlayer();
+					basicPlayer.open(selectedFile.getAbsoluteFile());
 
-					player.play();
+					basicPlayer.addBasicPlayerListener(MainController.this);
 
-				} catch (FileNotFoundException | JavaLayerException e) {
+					basicPlayer.play();
+
+					mainWindow.getAudioPlayer().getButtonPause().setEnabled(true);
+
+				} catch (BasicPlayerException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -141,4 +147,47 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 		FileTree fileTree = mainWindow.getFileTree();
 		fileTree.reload();
 	}
+
+	@Override
+	public void opened(Object arg0, Map arg1) {
+
+		System.out.println("MainController.opened()");
+
+	}
+
+	@Override
+	public void progress(int arg0, long microseconds, byte[] arg2, Map arg3) {
+		System.out.println("MainController.progress()");
+		int deciseconds = (int) (microseconds / 1000 / 100);
+
+		JSlider sliderTime = mainWindow.getAudioPlayer().getSliderTime();
+		sliderTime.setValue(deciseconds);
+
+	}
+
+	@Override
+	public void setController(BasicController controller) {
+
+	}
+
+	@Override
+	public void stateUpdated(BasicPlayerEvent event) {
+		System.out.println("MainController.stateUpdated()");
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent event) {
+
+		if (event.getSource() == mainWindow.getAudioPlayer().getButtonPause()) {
+
+			try {
+				basicPlayer.pause();
+			} catch (BasicPlayerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 }

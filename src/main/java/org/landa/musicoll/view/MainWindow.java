@@ -91,8 +91,8 @@ public class MainWindow extends JFrame {
 		contentPanel.setLayout(new BorderLayout());
 
 		JTabbedPane tabbedPane = new JTabbedPane();
-		tabbedPane.addTab("List", jScrollPane);
 		tabbedPane.addTab("Form", fileForm);
+		tabbedPane.addTab("List", jScrollPane);
 
 		contentPanel.add(audioPlayer, BorderLayout.NORTH);
 		contentPanel.add(tabbedPane, BorderLayout.CENTER);

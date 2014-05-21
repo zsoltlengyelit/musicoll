@@ -5,25 +5,21 @@ import javax.swing.JPanel;
 
 public class MenuPanel extends JPanel {
 
-    private JButton scanButton;
+	private JButton scanButton;
 
-    public MenuPanel() {
+	public MenuPanel() {
 
-        buildPane();
+		buildPane();
 
-        setVisible(true);
-    }
+		setVisible(true);
+	}
 
-    private void buildPane() {
+	private void buildPane() {
 
-        scanButton = new JButton("Scan");
+	}
 
-        // setLayout(new HorizBagLayout());
-        add(scanButton);
-    }
-
-    public JButton getScanButton() {
-        return scanButton;
-    }
+	public JButton getScanButton() {
+		return scanButton;
+	}
 
 }

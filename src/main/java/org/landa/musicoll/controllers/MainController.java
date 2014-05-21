@@ -49,6 +49,8 @@ public class MainController implements TreeSelectionListener,
 
 	private final MainWindow mainWindow;
 
+	private Mp3File mp3file;
+
 	@Inject
 	public MainController(final EbeanServer ebeanServer,
 			FileSystemWatchService watchService, MainWindow mainWindow) {
@@ -70,9 +72,13 @@ public class MainController implements TreeSelectionListener,
 		sliderTime.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
-				float percent = sliderTime.getValue() / sliderTime.getMaximum();
 
-				seekMusic(percent);
+				// JSlider slider = (JSlider) arg0.getSource();
+				// if (slider.getValueIsAdjusting()) {
+				// float percent = sliderTime.getValue()
+				// / sliderTime.getMaximum();
+				// seekMusic(percent);
+				// }
 			}
 
 		});
@@ -96,9 +102,16 @@ public class MainController implements TreeSelectionListener,
 
 	private void seekMusic(float percent) {
 
-		if (basicPlayer != null) {
+		if (basicPlayer != null && mp3file != null) {
 
 			System.out.println("MainController.seekMusic()");
+
+			try {
+				basicPlayer.seek((long) (percent * mp3file.getLength()));
+			} catch (BasicPlayerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 		} else {
 			System.err.println("Cannot track no player");
@@ -113,7 +126,10 @@ public class MainController implements TreeSelectionListener,
 				.getLastPathComponent();
 
 		File selectedFile = node.getFile();
-		openFile(selectedFile);
+
+		if (selectedFile.getName().toLowerCase().endsWith("mp3")) {
+			openFile(selectedFile);
+		}
 	}
 
 	private synchronized void openFile(final File selectedFile) {
@@ -159,7 +175,7 @@ public class MainController implements TreeSelectionListener,
 
 	private void showInfo(File selectedFile) {
 		try {
-			Mp3File mp3file = new Mp3File(selectedFile.getAbsolutePath());
+			mp3file = new Mp3File(selectedFile.getAbsolutePath());
 
 			if (null == mp3file) {
 				System.out.println("MainController.showInfo(): null");

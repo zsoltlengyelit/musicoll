@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import com.avaje.ebean.validation.NotNull;
+
 @Entity
 @Table(name = "resource")
 public class Resource implements Serializable {
@@ -52,6 +54,7 @@ public class Resource implements Serializable {
 	@Lob
 	private String note;
 
+	@NotNull
 	private String relativePath;
 
 	public Long getId() {

@@ -1,10 +1,13 @@
 package org.landa.musicoll.view.components;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.io.File;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -15,6 +18,8 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.landa.musicoll.controllers.FileFormController;
+
 /**
  * 
  * @author Zsolti
@@ -22,17 +27,34 @@ import net.miginfocom.swing.MigLayout;
  */
 public class FileForm extends JPanel {
 
-	public FileForm() {
+	private final File selectedFile;
+	private final JTextField titleText;
+	private final JTextField artText;
+	private final JTextField instrumentText;
+	private final JTextField regionText;
+	private final JTextField placeText;
+	private final JCheckBox transCheck;
+	private final JTextField artistText;
+	private final JTextField collectorText;
+	private final JTextField collectionTimeText;
+	private final JTextArea noteText;
+	private final JButton saveButton;
+	private final TabTitlePanel tabTitlePanel;
 
+	public FileForm(File selectedFile, FileFormController fileFormController,
+			TabTitlePanel tabTitlePanel) {
 		super();
+		this.selectedFile = selectedFile;
+		this.tabTitlePanel = tabTitlePanel;
 
-		setLayout(new MigLayout());
+		setLayout(new BoxLayout(this, WIDTH));
 
-		JPanel menuPanel = new JPanel();
-		menuPanel.add(new JButton("Mentés"));
+		JPanel menuPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		saveButton = new JButton("Mentés");
+		menuPanel.add(saveButton);
 		menuPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,
 				Color.BLACK));
-		;
+
 		add(menuPanel, "span, grow, wrap");
 
 		JPanel formsPanel = new JPanel();
@@ -48,27 +70,27 @@ public class FileForm extends JPanel {
 
 		JLabel titleLabel = createLabel("Kezdősor/cím");
 		leftPanel.add(titleLabel);
-		JTextField titleText = createTextField();
+		titleText = createTextField();
 		leftPanel.add(titleText, "span, grow, wrap");
 
 		JLabel artLabel = createLabel("Műfaj");
 		leftPanel.add(artLabel);
-		JTextField artText = createTextField();
+		artText = createTextField();
 		leftPanel.add(artText, "span, grow, wrap");
 
 		JLabel instrumentLabel = createLabel("Hangszer");
 		leftPanel.add(instrumentLabel);
-		JTextField instrumentText = createTextField();
+		instrumentText = createTextField();
 		leftPanel.add(instrumentText, "span, grow, wrap");
 
 		JLabel regionLabel = createLabel("Tájegység");
 		leftPanel.add(regionLabel);
-		JTextField regionText = createTextField();
+		regionText = createTextField();
 		leftPanel.add(regionText, "span, grow, wrap");
 
 		JLabel placeLabel = createLabel("Helység");
 		leftPanel.add(placeLabel);
-		JTextField placeText = createTextField();
+		placeText = createTextField();
 		leftPanel.add(placeText, "span, grow, wrap");
 
 		// right panel
@@ -79,27 +101,27 @@ public class FileForm extends JPanel {
 
 		JLabel transLabel = createLabel("Feldolgozás");
 		rightPanel.add(transLabel);
-		JCheckBox transCheck = new JCheckBox();
+		transCheck = new JCheckBox();
 		rightPanel.add(transCheck, "span, wrap");
 
 		JLabel artistLabel = createLabel("Előadó");
 		rightPanel.add(artistLabel);
-		JTextField artistText = createTextField();
+		artistText = createTextField();
 		rightPanel.add(artistText, "span, grow, wrap");
 
 		JLabel collectorLabel = createLabel("Gyűjtő");
 		rightPanel.add(collectorLabel);
-		JTextField collectorText = createTextField();
+		collectorText = createTextField();
 		rightPanel.add(collectorText, "span, grow, wrap");
 
 		JLabel collectionTimeLabel = createLabel("Gyűjtés ideje");
 		rightPanel.add(collectionTimeLabel);
-		JTextField collectionTimeText = createTextField(15);
+		collectionTimeText = createTextField(15);
 		rightPanel.add(collectionTimeText, "span, grow, wrap");
 
 		JLabel noteLabel = createLabel("Jegyzet");
 		rightPanel.add(noteLabel);
-		JTextArea noteText = new JTextArea(10, 25);
+		noteText = new JTextArea(50, 35);
 		noteText.setFont(new Font("Arial", 0, 12));
 
 		JScrollPane noteJScrollPane = new JScrollPane(noteText);
@@ -108,8 +130,14 @@ public class FileForm extends JPanel {
 		formsPanel.add(leftPanel);
 		formsPanel.add(rightPanel);
 
+		fileFormController.attach(this, selectedFile);
+
 		setVisible(true);
 
+	}
+
+	public TabTitlePanel getTabTitlePanel() {
+		return tabTitlePanel;
 	}
 
 	private JLabel createLabel(String value) {
@@ -117,12 +145,60 @@ public class FileForm extends JPanel {
 	}
 
 	private JTextField createTextField() {
-		return createTextField(25);
+		return createTextField(45);
 	}
 
 	private JTextField createTextField(int size) {
 		JTextField jTextField = new JTextField(size);
 		return jTextField;
+	}
+
+	public File getSelectedFile() {
+		return selectedFile;
+	}
+
+	public JTextField getTitleText() {
+		return titleText;
+	}
+
+	public JTextField getArtText() {
+		return artText;
+	}
+
+	public JTextField getInstrumentText() {
+		return instrumentText;
+	}
+
+	public JTextField getRegionText() {
+		return regionText;
+	}
+
+	public JTextField getPlaceText() {
+		return placeText;
+	}
+
+	public JCheckBox getTransCheck() {
+		return transCheck;
+	}
+
+	public JTextField getArtistText() {
+		return artistText;
+	}
+
+	public JTextField getCollectorText() {
+		return collectorText;
+	}
+
+	public JTextField getCollectionTimeText() {
+		return collectionTimeText;
+	}
+
+	public JTextArea getNoteText() {
+		return noteText;
+	}
+
+	public JButton getSaveButton() {
+		return saveButton;
 	}
 
 }

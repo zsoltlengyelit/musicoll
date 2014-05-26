@@ -2,15 +2,17 @@ package org.landa.musicoll.controllers;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.WatchEvent;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
 import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -24,15 +26,20 @@ import javazoom.jlgui.basicplayer.BasicPlayerException;
 import javazoom.jlgui.basicplayer.BasicPlayerListener;
 
 import org.landa.musicoll.controllers.player.SwingAudioPlayer;
+import org.landa.musicoll.core.FilePlaceResolver;
+import org.landa.musicoll.core.ResourceDataModel;
 import org.landa.musicoll.core.watch.FileSystemListener;
 import org.landa.musicoll.core.watch.FileSystemWatchService;
 import org.landa.musicoll.model.Resource;
 import org.landa.musicoll.view.MainWindow;
+import org.landa.musicoll.view.components.FileForm;
 import org.landa.musicoll.view.components.FileTree;
 import org.landa.musicoll.view.components.FileTreeNode;
+import org.landa.musicoll.view.components.TabTitlePanel;
 
 import com.avaje.ebean.EbeanServer;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
@@ -51,12 +58,25 @@ public class MainController implements TreeSelectionListener,
 
 	private Mp3File mp3file;
 
+	private final Injector injector;
+
+	private final Map<String, FileForm> tabMap = new HashMap<String, FileForm>();
+
+	private final FilePlaceResolver filePlaceResolver;
+
+	private final ResourceDataModel resourceDataModel;
+
 	@Inject
 	public MainController(final EbeanServer ebeanServer,
-			FileSystemWatchService watchService, MainWindow mainWindow) {
+			FileSystemWatchService watchService, MainWindow mainWindow,
+			Injector injector, FilePlaceResolver filePlaceResolver,
+			ResourceDataModel resourceDataModel) {
 		this.ebeanServer = ebeanServer;
 		this.watchService = watchService;
 		this.mainWindow = mainWindow;
+		this.injector = injector;
+		this.filePlaceResolver = filePlaceResolver;
+		this.resourceDataModel = resourceDataModel;
 
 	}
 
@@ -83,15 +103,18 @@ public class MainController implements TreeSelectionListener,
 
 		});
 
-		JList<Resource> list = mainWindow.getList();
+		mainWindow.getFilterTable().getTable()
+				.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2) {
+							JTable target = (JTable) e.getSource();
+							int row = target.getSelectedRow();
 
-		List<Resource> resources = ebeanServer.find(Resource.class).findList();
-
-		DefaultListModel<Resource> listModel = (DefaultListModel<Resource>) list
-				.getModel();
-		for (Resource resource : resources) {
-			listModel.addElement(resource);
-		}
+							openSelectedLineFromTable(row);
+						}
+					}
+				});
 
 		watchService.setListener(this);
 		this.watchService.watch();
@@ -136,36 +159,64 @@ public class MainController implements TreeSelectionListener,
 
 		showInfo(selectedFile);
 
-		new Thread(new Runnable() {
+		openTab(selectedFile);
 
-			@Override
-			public void run() {
-				try {
+		// new Thread(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		// try {
+		//
+		// System.out.println("MainController.openFile()");
+		//
+		// if (null != basicPlayer) {
+		// basicPlayer.stop();
+		// }
+		//
+		// basicPlayer = new BasicPlayer();
+		// basicPlayer.open(selectedFile.getAbsoluteFile());
+		//
+		// basicPlayer.addBasicPlayerListener(MainController.this);
+		//
+		// basicPlayer.play();
+		//
+		// setPlayState(true);
+		//
+		// } catch (BasicPlayerException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		// }
+		//
+		// }).start();
 
-					System.out.println("MainController.openFile()");
+	}
 
-					if (null != basicPlayer) {
-						basicPlayer.stop();
-					}
+	private void openTab(File selectedFile) {
 
-					basicPlayer = new BasicPlayer();
-					basicPlayer.open(selectedFile.getAbsoluteFile());
+		String relativePath = filePlaceResolver.getRelativePath(selectedFile);
+		JTabbedPane tabbedPane = mainWindow.getTabbedPane();
+		FileForm fileForm;
 
-					basicPlayer.addBasicPlayerListener(MainController.this);
+		if (tabMap.containsKey(relativePath)) {
+			fileForm = tabMap.get(relativePath);
+		} else {
 
-					basicPlayer.play();
+			TabTitlePanel tabTitlePanel = new TabTitlePanel(
+					selectedFile.getName(), this, relativePath);
 
-					setPlayState(true);
+			fileForm = new FileForm(selectedFile,
+					injector.getInstance(FileFormController.class),
+					tabTitlePanel);
+			fileForm.setOpaque(false);
+			tabbedPane.add(fileForm);
+			tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(fileForm),
+					tabTitlePanel);
 
-				} catch (BasicPlayerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
-
-		}).start();
-
+			tabMap.put(relativePath, fileForm);
+		}
+		tabbedPane.setSelectedComponent(fileForm);
 	}
 
 	private void setPlayState(boolean play) {
@@ -182,14 +233,16 @@ public class MainController implements TreeSelectionListener,
 			}
 
 			ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-			System.out.println("Track: " + id3v1Tag.getTrack());
-			System.out.println("Artist: " + id3v1Tag.getArtist());
-			System.out.println("Title: " + id3v1Tag.getTitle());
-			System.out.println("Album: " + id3v1Tag.getAlbum());
-			System.out.println("Year: " + id3v1Tag.getYear());
-			System.out.println("Genre: " + id3v1Tag.getGenre() + " ("
-					+ id3v1Tag.getGenreDescription() + ")");
-			System.out.println("Comment: " + id3v1Tag.getComment());
+			if (null != id3v1Tag) {
+				System.out.println("Track: " + id3v1Tag.getTrack());
+				System.out.println("Artist: " + id3v1Tag.getArtist());
+				System.out.println("Title: " + id3v1Tag.getTitle());
+				System.out.println("Album: " + id3v1Tag.getAlbum());
+				System.out.println("Year: " + id3v1Tag.getYear());
+				System.out.println("Genre: " + id3v1Tag.getGenre() + " ("
+						+ id3v1Tag.getGenreDescription() + ")");
+				System.out.println("Comment: " + id3v1Tag.getComment());
+			}
 		} catch (IOException | UnsupportedTagException | InvalidDataException e) {
 			e.printStackTrace();
 		}
@@ -224,7 +277,6 @@ public class MainController implements TreeSelectionListener,
 	@Override
 	public void stateUpdated(BasicPlayerEvent event) {
 		System.out.println("MainController.stateUpdated()");
-
 	}
 
 	@Override
@@ -239,6 +291,20 @@ public class MainController implements TreeSelectionListener,
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void removeTab(String relativePath) {
+
+		FileForm fileForm = tabMap.get(relativePath);
+		mainWindow.getTabbedPane().remove(fileForm);
+		tabMap.remove(relativePath);
+	}
+
+	private void openSelectedLineFromTable(int index) {
+		Resource resource = resourceDataModel.getData().get(index);
+
+		File file = filePlaceResolver.getFile(resource);
+		openTab(file);
 	}
 
 }

@@ -106,7 +106,10 @@ public class FileFormController implements ActionListener, DocumentListener,
 		resource.setCollectionTime(fileForm.getCollectionTimeText().getText());
 		resource.setNote(fileForm.getNoteText().getText());
 
-		ebeanServer.save(resource);
+		if (null == resource.getId())
+			ebeanServer.save(resource);
+		else
+			ebeanServer.update(resource);
 
 		fileForm.getTabTitlePanel().setSaved();
 		resourceDataModel.refresh();

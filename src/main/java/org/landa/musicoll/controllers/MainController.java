@@ -161,35 +161,35 @@ public class MainController implements TreeSelectionListener,
 
 		openTab(selectedFile);
 
-		// new Thread(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		// try {
-		//
-		// System.out.println("MainController.openFile()");
-		//
-		// if (null != basicPlayer) {
-		// basicPlayer.stop();
-		// }
-		//
-		// basicPlayer = new BasicPlayer();
-		// basicPlayer.open(selectedFile.getAbsoluteFile());
-		//
-		// basicPlayer.addBasicPlayerListener(MainController.this);
-		//
-		// basicPlayer.play();
-		//
-		// setPlayState(true);
-		//
-		// } catch (BasicPlayerException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// }
-		//
-		// }).start();
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+
+					System.out.println("MainController.openFile()");
+
+					if (null != basicPlayer) {
+						basicPlayer.stop();
+					}
+
+					basicPlayer = new BasicPlayer();
+					basicPlayer.open(selectedFile.getAbsoluteFile());
+
+					basicPlayer.addBasicPlayerListener(MainController.this);
+
+					basicPlayer.play();
+
+					setPlayState(true);
+
+				} catch (BasicPlayerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+
+		}).start();
 
 	}
 

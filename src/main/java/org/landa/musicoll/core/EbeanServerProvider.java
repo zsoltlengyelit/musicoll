@@ -16,6 +16,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class EbeanServerProvider implements Provider<EbeanServer> {
 
+	private static final String MUSICOLLDB = "musicolldb";
+
 	private final ServerConfig config;
 
 	private EbeanServer ebeanServer;
@@ -32,14 +34,19 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 		h2Db.setUsername("sa");
 		h2Db.setPassword("");
 		h2Db.setUrl("jdbc:h2:" + basePath.getAbsolutePath() + File.separator
-				+ "musicolldb");
+				+ MUSICOLLDB + ";DB_CLOSE_ON_EXIT=FALSE");
 		h2Db.setHeartbeatSql("SELECT 1;");
 
 		config.setDataSourceConfig(h2Db);
 
-		// set DDL options...
-		config.setDdlGenerate(false);
-		config.setDdlRun(false);
+		File dbFile = new File(basePath.getAbsolutePath() + File.separator
+				+ MUSICOLLDB + ".mv.db");
+
+		if (!dbFile.exists()) {
+			// set DDL options...
+			config.setDdlGenerate(true);
+			config.setDdlRun(true);
+		}
 
 		config.setDefaultServer(true);
 		config.setRegister(false);

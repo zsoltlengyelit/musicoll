@@ -1,8 +1,8 @@
 package org.landa.musicoll;
 
 import java.io.File;
-import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -30,13 +30,15 @@ public class App {
 
 		File basePath = getBasePath();
 
-		final Injector injector = Guice.createInjector(new MusicollModule(basePath));
+		final Injector injector = Guice.createInjector(new MusicollModule(
+				basePath));
 
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 
-				MainController mainController = injector.getInstance(MainController.class);
+				MainController mainController = injector
+						.getInstance(MainController.class);
 				mainController.start();
 			}
 		});
@@ -45,30 +47,30 @@ public class App {
 
 	private static File getBasePath() {
 
-		try {
-			return new File("./tmp").getCanonicalFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
-			System.exit(0);
-		}
-
-		return null;
-
-		// JFileChooser chooser = new JFileChooser();
-		// chooser.setCurrentDirectory(new java.io.File("."));
-		// chooser.setDialogTitle("Musicoll");
-		// chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		// chooser.setAcceptAllFileFilterUsed(false);
+		// try {
+		// return new File("./tmp").getCanonicalFile();
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
 		//
-		// if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-		// return chooser.getSelectedFile();
-		//
-		// } else {
 		// System.exit(0);
 		// }
 		//
 		// return null;
+
+		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new java.io.File("."));
+		chooser.setDialogTitle("Musicoll");
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setAcceptAllFileFilterUsed(false);
+
+		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			return chooser.getSelectedFile();
+
+		} else {
+			System.exit(0);
+		}
+
+		return null;
 	}
 }

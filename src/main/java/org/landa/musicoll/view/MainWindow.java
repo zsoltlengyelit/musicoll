@@ -10,7 +10,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
-import org.landa.musicoll.controllers.player.SwingAudioPlayer;
 import org.landa.musicoll.view.components.FileTree;
 import org.landa.musicoll.view.components.FilterTable;
 import org.landa.musicoll.view.components.MenuPanel;
@@ -33,20 +32,16 @@ public class MainWindow extends JFrame {
 
 	File basePath;
 
-	private final SwingAudioPlayer audioPlayer;
-
 	private JTabbedPane tabbedPane;
 
 	private final FilterTable filterTable;
 
 	@Inject
-	public MainWindow(@Named("basePath") final File basePath,
-			final MenuPanel menuPanel, final SwingAudioPlayer audioPlayer,
-			FilterTable filterTable) {
+	public MainWindow(@Named("basePath") final File basePath, final MenuPanel menuPanel, FilterTable filterTable) {
 
 		this.basePath = basePath;
 		this.menuPanel = menuPanel;
-		this.audioPlayer = audioPlayer;
+
 		this.filterTable = filterTable;
 
 		System.out.println("MainWindow.MainWindow()");
@@ -76,11 +71,9 @@ public class MainWindow extends JFrame {
 		// tabbedPane.addTab("Form", fileForm);
 		tabbedPane.addTab("Lista", jScrollPane);
 
-		contentPanel.add(audioPlayer, BorderLayout.NORTH);
 		contentPanel.add(tabbedPane, BorderLayout.CENTER);
 
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				fileTree, contentPanel);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileTree, contentPanel);
 		// splitPane.setPreferredSize(new Dimension(arg0, arg1));
 
 		pane.add(splitPane, BorderLayout.CENTER);
@@ -94,10 +87,6 @@ public class MainWindow extends JFrame {
 
 	public MenuPanel getMenuPanel() {
 		return menuPanel;
-	}
-
-	public SwingAudioPlayer getAudioPlayer() {
-		return audioPlayer;
 	}
 
 	public JTabbedPane getTabbedPane() {

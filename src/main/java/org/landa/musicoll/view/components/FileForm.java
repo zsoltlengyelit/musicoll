@@ -1,10 +1,14 @@
 package org.landa.musicoll.view.components;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -41,8 +45,7 @@ public class FileForm extends JPanel {
 	private final JButton saveButton;
 	private final TabTitlePanel tabTitlePanel;
 
-	public FileForm(File selectedFile, FileFormController fileFormController,
-			TabTitlePanel tabTitlePanel) {
+	public FileForm(final File selectedFile, FileFormController fileFormController, TabTitlePanel tabTitlePanel) {
 		super();
 		this.selectedFile = selectedFile;
 		this.tabTitlePanel = tabTitlePanel;
@@ -52,8 +55,24 @@ public class FileForm extends JPanel {
 		JPanel menuPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		saveButton = new JButton("Mentés");
 		menuPanel.add(saveButton);
-		menuPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,
-				Color.BLACK));
+
+		// play button
+		JButton playButton = new JButton("▶");
+		playButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Desktop.getDesktop().open(selectedFile);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		menuPanel.add(playButton);
+
+		menuPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
 		add(menuPanel, "span, grow, wrap");
 
@@ -96,8 +115,7 @@ public class FileForm extends JPanel {
 		// right panel
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new MigLayout());
-		rightPanel.setBorder(BorderFactory
-				.createTitledBorder("Gyűjtési adatok"));
+		rightPanel.setBorder(BorderFactory.createTitledBorder("Gyűjtési adatok"));
 
 		JLabel transLabel = createLabel("Feldolgozás");
 		rightPanel.add(transLabel);

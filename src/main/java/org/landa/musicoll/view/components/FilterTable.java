@@ -56,8 +56,7 @@ public class FilterTable extends JPanel {
 		selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		selectionModel.setValueIsAdjusting(false);
 
-		final TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(
-				resourceTableModel);
+		final TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(resourceTableModel);
 		getTable().setRowSorter(sorter);
 		JScrollPane pane = new JScrollPane(getTable());
 		add(pane, BorderLayout.CENTER);
@@ -77,7 +76,7 @@ public class FilterTable extends JPanel {
 					sorter.setRowFilter(null);
 				} else {
 					try {
-						sorter.setRowFilter(RowFilter.regexFilter(text));
+						sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
 					} catch (PatternSyntaxException pse) {
 						System.err.println("Bad regex pattern");
 					}

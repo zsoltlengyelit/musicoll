@@ -1,11 +1,20 @@
 package org.landa.musicoll;
 
+import java.awt.BorderLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import org.apache.log4j.Logger;
 import org.landa.musicoll.controllers.MainController;
 import org.landa.musicoll.core.MusicollModule;
 
@@ -14,19 +23,44 @@ import com.google.inject.Injector;
 
 public class App {
 
+	public static final Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(App.class);
+
+	public static final Image IMAGE = Toolkit.getDefaultToolkit().createImage(
+			ClassLoader.getSystemResource("icon.jpg"));
+
+	private JDialog dialog;
+	private JFrame frame;
+	private JProgressBar progress;
+
+	private JFrame splashFrame;
+
 	public static void main(final String[] args) {
+
+		LOGGER.info("Start app");
+
+		try {
+			new App();
+		} catch (Throwable throwable) {
+			LOGGER.error("Fatal error", throwable);
+		}
+	}
+
+	private App() {
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (UnsupportedLookAndFeelException ex) {
-			ex.printStackTrace();
+			LOGGER.error("Nem win rendszer", ex);
 		} catch (IllegalAccessException ex) {
-			ex.printStackTrace();
+			LOGGER.error("Hiba", ex);
 		} catch (InstantiationException ex) {
-			ex.printStackTrace();
+			LOGGER.error("Instantiatio error", ex);
 		} catch (ClassNotFoundException ex) {
-			ex.printStackTrace();
+			LOGGER.error("Class not found", ex);
 		}
+
+		showSplashScreen();
 
 		File basePath = getBasePath();
 
@@ -39,10 +73,48 @@ public class App {
 
 				MainController mainController = injector
 						.getInstance(MainController.class);
-				mainController.start();
+				mainController.start(new Runnable() {
+
+					@Override
+					public void run() {
+						hideSplashScreen();
+					}
+				});
 			}
 		});
 
+	}
+
+	protected void hideSplashScreen() {
+		dialog.setVisible(false);
+		dialog.dispose();
+		splashFrame.setVisible(false);
+		splashFrame.dispose();
+	}
+
+	protected void showSplashScreen() {
+		splashFrame = new JFrame("Musicoll");
+
+		splashFrame.setIconImage(IMAGE);
+		splashFrame.setVisible(true);
+		splashFrame.setSize(0, 0);
+
+		dialog = new JDialog(splashFrame);
+		dialog.setModal(false);
+		dialog.setUndecorated(true);
+
+		dialog.setIconImage(IMAGE);
+
+		JLabel background = new JLabel(new ImageIcon(getClass()
+				.getClassLoader().getResource("splash.jpg")));
+		background.setLayout(new BorderLayout());
+		dialog.add(background);
+		progress = new JProgressBar();
+		progress.setIndeterminate(true);
+		background.add(progress, BorderLayout.SOUTH);
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
 	}
 
 	private static File getBasePath() {

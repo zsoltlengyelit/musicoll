@@ -2,8 +2,8 @@ package org.landa.musicoll.controllers;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.WatchEvent;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,14 +31,14 @@ import org.landa.musicoll.view.components.TabTitlePanel;
 import com.avaje.ebean.EbeanServer;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.mpatric.mp3agic.ID3v1;
-import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 
-public class MainController implements TreeSelectionListener, FileSystemListener {
+public class MainController implements TreeSelectionListener,
+		FileSystemListener {
 
-	public static final List<String> SUPPORTED_TYPE = Collections.unmodifiableList(Arrays.asList("mp3", "flac", "ogg", "wav", "mp4"));
+	public static final List<String> SUPPORTED_TYPE = Collections
+			.unmodifiableList(Arrays.asList("mp3", "flac", "ogg", "wav", "mp4",
+					"wma", "mov", "flv", "avi", "vid"));
 
 	private final EbeanServer ebeanServer;
 
@@ -57,8 +57,10 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 	private final ResourceDataModel resourceDataModel;
 
 	@Inject
-	public MainController(final EbeanServer ebeanServer, FileSystemWatchService watchService, MainWindow mainWindow, Injector injector, FilePlaceResolver filePlaceResolver,
-	        ResourceDataModel resourceDataModel) {
+	public MainController(final EbeanServer ebeanServer,
+			FileSystemWatchService watchService, MainWindow mainWindow,
+			Injector injector, FilePlaceResolver filePlaceResolver,
+			ResourceDataModel resourceDataModel) {
 		this.ebeanServer = ebeanServer;
 		this.watchService = watchService;
 		this.mainWindow = mainWindow;
@@ -68,35 +70,70 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 
 	}
 
-	public void start() {
+	public void start(Runnable afterStart) {
 
 		FileTree fileTree = mainWindow.getFileTree();
 		JTree tree = fileTree.getTree();
 		tree.addTreeSelectionListener(this);
+		tree.addMouseListener(new MouseListener() {
 
-		mainWindow.getFilterTable().getTable().addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					JTable target = (JTable) e.getSource();
-					int row = target.getSelectedRow();
+			public void mouseReleased(MouseEvent arg0) {
+				// TODO Auto-generated method stub
 
-					openSelectedLineFromTable(row);
-				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent event) {
+				event.getClass();
 			}
 		});
+
+		mainWindow.getFilterTable().getTable()
+				.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2) {
+							JTable target = (JTable) e.getSource();
+							int row = target.getSelectedRow();
+
+							openSelectedLineFromTable(row);
+						}
+					}
+				});
 
 		watchService.setListener(this);
 		this.watchService.watch();
 
 		// finaly show window
 		mainWindow.setVisible(true);
+
+		afterStart.run();
 	}
 
 	@Override
 	public void valueChanged(final TreeSelectionEvent event) {
 
-		FileTreeNode node = (FileTreeNode) event.getPath().getLastPathComponent();
+		FileTreeNode node = (FileTreeNode) event.getPath()
+				.getLastPathComponent();
 
 		File selectedFile = node.getFile();
 
@@ -105,7 +142,7 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 		}
 	}
 
-	private boolean isSupported(String name) {
+	public static boolean isSupported(String name) {
 
 		String[] parts = name.split("\\.");
 		String ext = parts[parts.length - 1].toLowerCase();
@@ -113,14 +150,19 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 		return SUPPORTED_TYPE.contains(ext);
 	}
 
-	private synchronized void openFile(final File selectedFile) {
+	public static boolean isMp3(String name) {
+		if (name.contains(".")) {
+			String[] parts = name.split("\\.");
+			String ext = parts[parts.length - 1];
 
-		showInfo(selectedFile);
+			return "mp3".equalsIgnoreCase(ext);
+		}
 
-		openTab(selectedFile);
+		return false;
+
 	}
 
-	private void openTab(File selectedFile) {
+	private synchronized void openFile(final File selectedFile) {
 
 		String relativePath = filePlaceResolver.getRelativePath(selectedFile);
 		JTabbedPane tabbedPane = mainWindow.getTabbedPane();
@@ -130,39 +172,20 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 			fileForm = tabMap.get(relativePath);
 		} else {
 
-			TabTitlePanel tabTitlePanel = new TabTitlePanel(selectedFile.getName(), this, relativePath);
+			TabTitlePanel tabTitlePanel = new TabTitlePanel(
+					selectedFile.getName(), this, relativePath);
 
-			fileForm = new FileForm(selectedFile, injector.getInstance(FileFormController.class), tabTitlePanel);
+			fileForm = new FileForm(selectedFile,
+					injector.getInstance(FileFormController.class),
+					tabTitlePanel);
 			fileForm.setOpaque(false);
 			tabbedPane.add(fileForm);
-			tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(fileForm), tabTitlePanel);
+			tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(fileForm),
+					tabTitlePanel);
 
 			tabMap.put(relativePath, fileForm);
 		}
 		tabbedPane.setSelectedComponent(fileForm);
-	}
-
-	private void showInfo(File selectedFile) {
-		try {
-			mp3file = new Mp3File(selectedFile.getAbsolutePath());
-
-			if (null == mp3file) {
-				System.out.println("MainController.showInfo(): null");
-			}
-
-			ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-			if (null != id3v1Tag) {
-				System.out.println("Track: " + id3v1Tag.getTrack());
-				System.out.println("Artist: " + id3v1Tag.getArtist());
-				System.out.println("Title: " + id3v1Tag.getTitle());
-				System.out.println("Album: " + id3v1Tag.getAlbum());
-				System.out.println("Year: " + id3v1Tag.getYear());
-				System.out.println("Genre: " + id3v1Tag.getGenre() + " (" + id3v1Tag.getGenreDescription() + ")");
-				System.out.println("Comment: " + id3v1Tag.getComment());
-			}
-		} catch (IOException | UnsupportedTagException | InvalidDataException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -182,7 +205,7 @@ public class MainController implements TreeSelectionListener, FileSystemListener
 		Resource resource = resourceDataModel.getData().get(index);
 
 		File file = filePlaceResolver.getFile(resource);
-		openTab(file);
+		openFile(file);
 	}
 
 }

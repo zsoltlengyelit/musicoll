@@ -2,6 +2,9 @@ package org.landa.musicoll.core;
 
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
+import org.landa.musicoll.App;
 import org.landa.musicoll.model.Resource;
 
 import com.avaje.ebean.EbeanServer;
@@ -16,7 +19,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class EbeanServerProvider implements Provider<EbeanServer> {
 
-	private static final String MUSICOLLDB = "musicolldb";
+	public static final String MUSICOLLDB = "musicolldb";
 
 	private final ServerConfig config;
 
@@ -58,7 +61,18 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 	@Override
 	public EbeanServer get() {
 		if (null == ebeanServer) {
-			ebeanServer = EbeanServerFactory.create(config);
+			try {
+				ebeanServer = EbeanServerFactory.create(config);
+			} catch (Exception exception) {
+				App.LOGGER.error("DB error", exception);
+				JOptionPane.showMessageDialog(null,
+						"Valószínűleg egy másik páldány fut ebben a mappában\n"
+								+ exception.getLocalizedMessage(), "Hiba",
+						JOptionPane.OK_OPTION);
+
+				System.exit(0);
+
+			}
 		}
 		return ebeanServer;
 	}

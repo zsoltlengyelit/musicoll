@@ -3,12 +3,14 @@ package org.landa.musicoll.controllers;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.landa.musicoll.App;
 import org.landa.musicoll.core.FilePlaceResolver;
 import org.landa.musicoll.core.ResourceDataModel;
 import org.landa.musicoll.model.Resource;
@@ -16,6 +18,10 @@ import org.landa.musicoll.view.components.FileForm;
 
 import com.avaje.ebean.EbeanServer;
 import com.google.inject.Inject;
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
 
 /**
  * 
@@ -87,6 +93,36 @@ public class FileFormController implements ActionListener, DocumentListener,
 		if (null == resource) {
 			resource = new Resource();
 			resource.setRelativePath(relativePath);
+
+			if (MainController.isMp3(file.getName())) {
+				try {
+					Mp3File mp3file = new Mp3File(file.getAbsolutePath());
+
+					if (null != mp3file) {
+
+						ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+						if (null != id3v1Tag) {
+
+							String artist = id3v1Tag.getArtist();
+							String title = id3v1Tag.getTitle();
+							String album = id3v1Tag.getAlbum();
+							String year = id3v1Tag.getYear();
+
+							String comment = id3v1Tag.getComment();
+
+							resource.setNote(comment);
+							resource.setArtist(artist);
+							resource.setTitle(String.format("%s (%s, %s)",
+									title, album, year));
+
+						}
+					}
+				} catch (IOException | UnsupportedTagException
+						| InvalidDataException e) {
+					App.LOGGER.error(
+							"Cannot read idv3tag from  +" + file.getPath(), e);
+				}
+			}
 		}
 
 		return resource;

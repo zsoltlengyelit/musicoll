@@ -1,19 +1,25 @@
 package org.landa.musicoll.view.components;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.Collections;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeCellRenderer;
+
+import org.landa.musicoll.controllers.MainController;
 
 /**
  * Display a file system in a JTree view
@@ -21,10 +27,12 @@ import javax.swing.tree.ExpandVetoException;
  * @version $Id: FileTree.java,v 1.9 2004/02/23 03:39:22 ian Exp $
  * @author Ian Darwin
  */
-public class FileTree extends JPanel implements TreeWillExpandListener {
+public class FileTree extends JPanel implements TreeWillExpandListener,
+		TreeCellRenderer {
 
 	private final JTree tree;
 	private final File dir;
+	DefaultTreeCellRenderer defaultRenderer = new DefaultTreeCellRenderer();
 
 	/** Construct a FileTree */
 	public FileTree(final File dir) {
@@ -35,6 +43,8 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 		tree = new JTree(initTree(dir));
 
 		tree.addTreeWillExpandListener(this);
+
+		tree.setCellRenderer(this);
 
 		// Lastly, put the JTree into a JScrollPane.
 		JScrollPane scrollpane = new JScrollPane();
@@ -67,14 +77,17 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 	}
 
 	@Override
-	public void treeWillCollapse(final TreeExpansionEvent event) throws ExpandVetoException {
+	public void treeWillCollapse(final TreeExpansionEvent event)
+			throws ExpandVetoException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void treeWillExpand(final TreeExpansionEvent event) throws ExpandVetoException {
-		FileTreeNode treeNode = (FileTreeNode) event.getPath().getLastPathComponent();
+	public void treeWillExpand(final TreeExpansionEvent event)
+			throws ExpandVetoException {
+		FileTreeNode treeNode = (FileTreeNode) event.getPath()
+				.getLastPathComponent();
 
 		addNodes(treeNode);
 
@@ -107,6 +120,7 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 
 				FileTreeNode dirNode = new FileTreeNode(thisObject, f);
 				dirNode.setAllowsChildren(true);
+
 				rootNode.add(dirNode);
 
 			} else {
@@ -116,12 +130,16 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 		// Pass two: for files.
 		for (int fnum = 0; fnum < files.size(); fnum++) {
 			String file = (String) files.elementAt(fnum);
-			rootNode.add(new FileTreeNode(file, new File(dir.getPath() + File.separator + file)));
+			FileTreeNode fileNode = new FileTreeNode(file, new File(
+					dir.getPath() + File.separator + file));
+
+			rootNode.add(fileNode);
 		}
 
 		if (null != tree) {
 			DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model
+					.getRoot();
 			model.reload(root);
 		}
 
@@ -136,4 +154,32 @@ public class FileTree extends JPanel implements TreeWillExpandListener {
 
 	}
 
+	@Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value,
+			boolean selected, boolean expanded, boolean leaf, int row,
+			boolean hasFocus) {
+
+		DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) defaultRenderer
+				.getTreeCellRendererComponent(tree, value, selected, expanded,
+						leaf, row, hasFocus);
+
+		if (value instanceof FileTreeNode) {
+			FileTreeNode node = (FileTreeNode) value;
+			File file = node.getFile();
+			if (!file.isDirectory()) {
+
+				String fileName = file.getName();
+				boolean supported = MainController.isSupported(fileName);
+
+				String icon = supported ? "musicicon.png" : "empty.jpg";
+
+				renderer.setIcon(new ImageIcon(ClassLoader
+						.getSystemResource(icon)));
+
+			}
+
+		}
+		return renderer;
+
+	}
 }

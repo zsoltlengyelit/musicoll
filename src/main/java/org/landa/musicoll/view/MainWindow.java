@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
+import org.landa.musicoll.App;
 import org.landa.musicoll.view.components.FileTree;
 import org.landa.musicoll.view.components.FilterTable;
 import org.landa.musicoll.view.components.MenuPanel;
@@ -37,17 +38,17 @@ public class MainWindow extends JFrame {
 	private final FilterTable filterTable;
 
 	@Inject
-	public MainWindow(@Named("basePath") final File basePath, final MenuPanel menuPanel, FilterTable filterTable) {
+	public MainWindow(@Named("basePath") final File basePath,
+			final MenuPanel menuPanel, FilterTable filterTable) {
 
 		this.basePath = basePath;
 		this.menuPanel = menuPanel;
 
 		this.filterTable = filterTable;
 
-		System.out.println("MainWindow.MainWindow()");
-
 		setLayout(new BorderLayout());
 		setTitle("Musicoll");
+		setIconImage(App.IMAGE);
 
 		buildPane(getContentPane());
 
@@ -73,7 +74,8 @@ public class MainWindow extends JFrame {
 
 		contentPanel.add(tabbedPane, BorderLayout.CENTER);
 
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileTree, contentPanel);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				fileTree, contentPanel);
 		// splitPane.setPreferredSize(new Dimension(arg0, arg1));
 
 		pane.add(splitPane, BorderLayout.CENTER);

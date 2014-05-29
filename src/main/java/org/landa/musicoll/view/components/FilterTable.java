@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -56,18 +55,19 @@ public class FilterTable extends JPanel {
 		selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		selectionModel.setValueIsAdjusting(false);
 
-		final TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(resourceTableModel);
+		final TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(
+				resourceTableModel);
 		getTable().setRowSorter(sorter);
 		JScrollPane pane = new JScrollPane(getTable());
 		add(pane, BorderLayout.CENTER);
 		JPanel panel = new JPanel(new BorderLayout());
-		JLabel label = new JLabel("Keresés");
-		panel.add(label, BorderLayout.WEST);
+
 		final JTextField filterText = new JTextField();
 		panel.add(filterText, BorderLayout.CENTER);
+
 		add(panel, BorderLayout.NORTH);
 
-		JButton button = new JButton("Filter");
+		JButton button = new JButton("Keresés");
 		filterText.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -76,14 +76,15 @@ public class FilterTable extends JPanel {
 					sorter.setRowFilter(null);
 				} else {
 					try {
-						sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+						sorter.setRowFilter(RowFilter
+								.regexFilter("(?i)" + text));
 					} catch (PatternSyntaxException pse) {
 						System.err.println("Bad regex pattern");
 					}
 				}
 			}
 		});
-		add(button, BorderLayout.SOUTH);
+		panel.add(button, BorderLayout.EAST);
 
 		setVisible(true);
 	}

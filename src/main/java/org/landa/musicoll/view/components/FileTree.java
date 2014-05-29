@@ -140,7 +140,8 @@ public class FileTree extends JPanel implements TreeWillExpandListener,
 			DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 			DefaultMutableTreeNode root = (DefaultMutableTreeNode) model
 					.getRoot();
-			model.reload(root);
+			// model.reload(root);
+			// model.reload();
 		}
 
 	}

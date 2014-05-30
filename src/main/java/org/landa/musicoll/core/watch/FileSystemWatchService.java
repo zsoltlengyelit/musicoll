@@ -9,6 +9,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
+import org.apache.log4j.Logger;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -18,6 +20,8 @@ import com.google.inject.name.Named;
  * 
  */
 public class FileSystemWatchService {
+
+	private static final Logger LOGGER = Logger.getLogger(FileSystemWatchService.class);
 
 	private final File basePath;
 	private FileSystemListener listener;
@@ -39,8 +43,6 @@ public class FileSystemWatchService {
 
 	private void watchThread() {
 
-		System.out.println("FileSystemWatchService.watchThread()");
-
 		// define a folder root
 		Path myDir = Paths.get(basePath.getAbsolutePath());
 
@@ -60,7 +62,7 @@ public class FileSystemWatchService {
 
 					File absoluteFile = path.toFile().getAbsoluteFile();
 
-					System.out.println(event.toString() + " " + event.kind().name() + " " + event.context() + " " + absoluteFile);
+					LOGGER.info(event.toString() + " " + event.kind().name() + " " + event.context() + " " + absoluteFile);
 
 					dispatcheEvent(event);
 
@@ -74,10 +76,8 @@ public class FileSystemWatchService {
 				}
 			}
 
-			System.out.println("FileSystemWatchService.watchThread() end");
-
 		} catch (Exception e) {
-			System.out.println("Error: " + e.toString());
+			LOGGER.error("Error while watching dir", e);
 		}
 	}
 

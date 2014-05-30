@@ -2,7 +2,6 @@ package org.landa.musicoll.controllers;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.nio.file.WatchEvent;
 import java.util.Arrays;
@@ -33,12 +32,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.mpatric.mp3agic.Mp3File;
 
-public class MainController implements TreeSelectionListener,
-		FileSystemListener {
+public class MainController implements TreeSelectionListener, FileSystemListener {
 
-	public static final List<String> SUPPORTED_TYPE = Collections
-			.unmodifiableList(Arrays.asList("mp3", "flac", "ogg", "wav", "mp4",
-					"wma", "mov", "flv", "avi", "vid"));
+	public static final List<String> SUPPORTED_TYPE = Collections.unmodifiableList(Arrays.asList("mp3", "flac", "ogg", "wav", "mp4", "wma", "mov", "flv", "avi", "vid"));
 
 	private final EbeanServer ebeanServer;
 
@@ -56,17 +52,18 @@ public class MainController implements TreeSelectionListener,
 
 	private final ResourceDataModel resourceDataModel;
 
+	private final NodeOperationController nodeOperationController;
+
 	@Inject
-	public MainController(final EbeanServer ebeanServer,
-			FileSystemWatchService watchService, MainWindow mainWindow,
-			Injector injector, FilePlaceResolver filePlaceResolver,
-			ResourceDataModel resourceDataModel) {
+	public MainController(final EbeanServer ebeanServer, FileSystemWatchService watchService, MainWindow mainWindow, Injector injector, FilePlaceResolver filePlaceResolver,
+	        ResourceDataModel resourceDataModel, NodeOperationController nodeOperationController) {
 		this.ebeanServer = ebeanServer;
 		this.watchService = watchService;
 		this.mainWindow = mainWindow;
 		this.injector = injector;
 		this.filePlaceResolver = filePlaceResolver;
 		this.resourceDataModel = resourceDataModel;
+		this.nodeOperationController = nodeOperationController;
 
 	}
 
@@ -75,50 +72,20 @@ public class MainController implements TreeSelectionListener,
 		FileTree fileTree = mainWindow.getFileTree();
 		JTree tree = fileTree.getTree();
 		tree.addTreeSelectionListener(this);
-		tree.addMouseListener(new MouseListener() {
 
+		fileTree.setNodeOperationListener(nodeOperationController);
+
+		mainWindow.getFilterTable().getTable().addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				// TODO Auto-generated method stub
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					JTable target = (JTable) e.getSource();
+					int row = target.getSelectedRow();
 
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent event) {
-				event.getClass();
+					openSelectedLineFromTable(row);
+				}
 			}
 		});
-
-		mainWindow.getFilterTable().getTable()
-				.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						if (e.getClickCount() == 2) {
-							JTable target = (JTable) e.getSource();
-							int row = target.getSelectedRow();
-
-							openSelectedLineFromTable(row);
-						}
-					}
-				});
 
 		watchService.setListener(this);
 		this.watchService.watch();
@@ -132,8 +99,7 @@ public class MainController implements TreeSelectionListener,
 	@Override
 	public void valueChanged(final TreeSelectionEvent event) {
 
-		FileTreeNode node = (FileTreeNode) event.getPath()
-				.getLastPathComponent();
+		FileTreeNode node = (FileTreeNode) event.getPath().getLastPathComponent();
 
 		File selectedFile = node.getFile();
 
@@ -172,16 +138,12 @@ public class MainController implements TreeSelectionListener,
 			fileForm = tabMap.get(relativePath);
 		} else {
 
-			TabTitlePanel tabTitlePanel = new TabTitlePanel(
-					selectedFile.getName(), this, relativePath);
+			TabTitlePanel tabTitlePanel = new TabTitlePanel(selectedFile.getName(), this, relativePath);
 
-			fileForm = new FileForm(selectedFile,
-					injector.getInstance(FileFormController.class),
-					tabTitlePanel);
+			fileForm = new FileForm(selectedFile, injector.getInstance(FileFormController.class), tabTitlePanel);
 			fileForm.setOpaque(false);
 			tabbedPane.add(fileForm);
-			tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(fileForm),
-					tabTitlePanel);
+			tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(fileForm), tabTitlePanel);
 
 			tabMap.put(relativePath, fileForm);
 		}

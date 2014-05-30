@@ -10,6 +10,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -23,11 +24,9 @@ import com.google.inject.Injector;
 
 public class App {
 
-	public static final Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(App.class);
+	public static final Logger LOGGER = org.apache.log4j.Logger.getLogger(App.class);
 
-	public static final Image IMAGE = Toolkit.getDefaultToolkit().createImage(
-			ClassLoader.getSystemResource("icon.jpg"));
+	public static final Image IMAGE = Toolkit.getDefaultToolkit().createImage(ClassLoader.getSystemResource("icon.jpg"));
 
 	private JDialog dialog;
 	private JFrame frame;
@@ -64,15 +63,13 @@ public class App {
 
 		File basePath = getBasePath();
 
-		final Injector injector = Guice.createInjector(new MusicollModule(
-				basePath));
+		final Injector injector = Guice.createInjector(new MusicollModule(basePath));
 
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 
-				MainController mainController = injector
-						.getInstance(MainController.class);
+				MainController mainController = injector.getInstance(MainController.class);
 				mainController.start(new Runnable() {
 
 					@Override
@@ -105,8 +102,7 @@ public class App {
 
 		dialog.setIconImage(IMAGE);
 
-		JLabel background = new JLabel(new ImageIcon(getClass()
-				.getClassLoader().getResource("splash.jpg")));
+		JLabel background = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("splash.jpg")));
 		background.setLayout(new BorderLayout());
 		dialog.add(background);
 		progress = new JProgressBar();
@@ -133,6 +129,7 @@ public class App {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new java.io.File("."));
 		chooser.setDialogTitle("Musicoll");
+
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 
@@ -144,5 +141,11 @@ public class App {
 		}
 
 		return null;
+	}
+
+	public static void showError(String string, Exception exception) {
+
+		JOptionPane.showMessageDialog(null, exception.getLocalizedMessage(), string, JOptionPane.OK_OPTION);
+
 	}
 }

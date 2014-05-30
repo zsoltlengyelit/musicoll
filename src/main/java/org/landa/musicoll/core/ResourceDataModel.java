@@ -2,6 +2,7 @@ package org.landa.musicoll.core;
 
 import java.util.List;
 
+import org.landa.musicoll.App;
 import org.landa.musicoll.model.Resource;
 
 import com.avaje.ebean.EbeanServer;
@@ -31,15 +32,23 @@ public class ResourceDataModel {
 	}
 
 	public List<Resource> getData() {
-		if (null == data)
+		if (null == data) {
 			refresh();
+		}
 		return data;
 	}
 
 	public void refresh() {
-		this.data = ebeanServer.find(Resource.class).findList();
-		if (null != resourceTableModel) {
-			resourceTableModel.fireTableDataChanged();
+		try {
+
+			this.data = ebeanServer.find(Resource.class).findList();
+			if (null != resourceTableModel) {
+				resourceTableModel.fireTableDataChanged();
+			}
+
+		} catch (Exception exception) {
+			App.LOGGER.error("Cannot open database", exception);
+			App.showError("Nem lehet az adatbázisból olvasni", exception);
 		}
 	}
 

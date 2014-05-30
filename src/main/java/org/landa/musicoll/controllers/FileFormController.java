@@ -28,8 +28,7 @@ import com.mpatric.mp3agic.UnsupportedTagException;
  * @author Zsolti
  * 
  */
-public class FileFormController implements ActionListener, DocumentListener,
-		ChangeListener {
+public class FileFormController implements ActionListener, DocumentListener, ChangeListener {
 
 	private final FilePlaceResolver filePlaceResolver;
 	private FileForm fileForm;
@@ -39,8 +38,7 @@ public class FileFormController implements ActionListener, DocumentListener,
 	private final ResourceDataModel resourceDataModel;
 
 	@Inject
-	public FileFormController(FilePlaceResolver filePlaceResolver,
-			EbeanServer ebeanServer, ResourceDataModel resourceDataModel) {
+	public FileFormController(FilePlaceResolver filePlaceResolver, EbeanServer ebeanServer, ResourceDataModel resourceDataModel) {
 		this.filePlaceResolver = filePlaceResolver;
 		this.ebeanServer = ebeanServer;
 		this.resourceDataModel = resourceDataModel;
@@ -76,8 +74,7 @@ public class FileFormController implements ActionListener, DocumentListener,
 		});
 		fileForm.getArtistText().getDocument().addDocumentListener(this);
 		fileForm.getCollectorText().getDocument().addDocumentListener(this);
-		fileForm.getCollectionTimeText().getDocument()
-				.addDocumentListener(this);
+		fileForm.getCollectionTimeText().getDocument().addDocumentListener(this);
 		fileForm.getNoteText().getDocument().addDocumentListener(this);
 
 		fileForm.getSaveButton().addActionListener(this);
@@ -87,8 +84,7 @@ public class FileFormController implements ActionListener, DocumentListener,
 	private Resource getResource(File file) {
 
 		String relativePath = filePlaceResolver.getRelativePath(file);
-		Resource resource = ebeanServer.find(Resource.class).where()
-				.eq("relativePath", relativePath).findUnique();
+		Resource resource = ebeanServer.find(Resource.class).where().eq("relativePath", relativePath).findUnique();
 
 		if (null == resource) {
 			resource = new Resource();
@@ -112,15 +108,17 @@ public class FileFormController implements ActionListener, DocumentListener,
 
 							resource.setNote(comment);
 							resource.setArtist(artist);
-							resource.setTitle(String.format("%s (%s, %s)",
-									title, album, year));
+
+							if (null == album || "".equals(album)) {
+								resource.setTitle(title);
+							} else {
+								resource.setTitle(String.format("%s (%s, %s)", title, album, year));
+							}
 
 						}
 					}
-				} catch (IOException | UnsupportedTagException
-						| InvalidDataException e) {
-					App.LOGGER.error(
-							"Cannot read idv3tag from  +" + file.getPath(), e);
+				} catch (IOException | UnsupportedTagException | InvalidDataException e) {
+					App.LOGGER.error("Cannot read idv3tag from  +" + file.getPath(), e);
 				}
 			}
 		}
@@ -142,10 +140,11 @@ public class FileFormController implements ActionListener, DocumentListener,
 		resource.setCollectionTime(fileForm.getCollectionTimeText().getText());
 		resource.setNote(fileForm.getNoteText().getText());
 
-		if (null == resource.getId())
+		if (null == resource.getId()) {
 			ebeanServer.save(resource);
-		else
+		} else {
 			ebeanServer.update(resource);
+		}
 
 		fileForm.getTabTitlePanel().setSaved();
 		resourceDataModel.refresh();

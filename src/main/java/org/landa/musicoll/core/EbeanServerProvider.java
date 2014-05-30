@@ -26,7 +26,7 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 	private EbeanServer ebeanServer;
 
 	@Inject
-	public EbeanServerProvider(@Named("basePath") final File basePath) {
+	public EbeanServerProvider(@Named("basePath") final File basePath, DatabaseBackupManager backupManager) {
 
 		config = new ServerConfig();
 		config.setName("musicoll");
@@ -36,19 +36,21 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 		h2Db.setDriver("org.h2.Driver");
 		h2Db.setUsername("sa");
 		h2Db.setPassword("");
-		h2Db.setUrl("jdbc:h2:" + basePath.getAbsolutePath() + File.separator
-				+ MUSICOLLDB + ";DB_CLOSE_ON_EXIT=FALSE");
+		h2Db.setUrl("jdbc:h2:" + basePath.getAbsolutePath() + File.separator + MUSICOLLDB + ";DB_CLOSE_ON_EXIT=FALSE");
 		h2Db.setHeartbeatSql("SELECT 1;");
 
 		config.setDataSourceConfig(h2Db);
 
-		File dbFile = new File(basePath.getAbsolutePath() + File.separator
-				+ MUSICOLLDB + ".mv.db");
+		File dbFile = getDbFile(basePath);
 
 		if (!dbFile.exists()) {
 			// set DDL options...
 			config.setDdlGenerate(true);
 			config.setDdlRun(true);
+		} else {
+
+			backupManager.createBackup(dbFile);
+
 		}
 
 		config.setDefaultServer(true);
@@ -58,6 +60,11 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 
 	}
 
+	private static File getDbFile(final File basePath) {
+
+		return new File(basePath.getAbsolutePath() + File.separator + MUSICOLLDB + ".mv.db");
+	}
+
 	@Override
 	public EbeanServer get() {
 		if (null == ebeanServer) {
@@ -65,10 +72,7 @@ public class EbeanServerProvider implements Provider<EbeanServer> {
 				ebeanServer = EbeanServerFactory.create(config);
 			} catch (Exception exception) {
 				App.LOGGER.error("DB error", exception);
-				JOptionPane.showMessageDialog(null,
-						"Valószínűleg egy másik páldány fut ebben a mappában\n"
-								+ exception.getLocalizedMessage(), "Hiba",
-						JOptionPane.OK_OPTION);
+				JOptionPane.showMessageDialog(null, "Valószínűleg egy másik páldány fut ebben a mappában\n" + exception.getLocalizedMessage(), "Hiba", JOptionPane.OK_OPTION);
 
 				System.exit(0);
 

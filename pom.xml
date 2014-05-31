@@ -39,13 +39,7 @@
 			<artifactId>mp3agic</artifactId>
 			<version>0.8.2</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.javazoom</groupId>
-			<artifactId>basicplayer</artifactId>
-			<version>1.0</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
